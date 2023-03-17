@@ -1,0 +1,39 @@
+name: Use Private Action Workflow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  demo:    
+    runs-on: ubuntu-latest   
+    environment: dev
+    steps:
+    
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: "Get Application Token"
+      id: get_app_token
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: ${{ secrets.TECHDRIVEN_APP_CLIENTID }}
+        private_key: ${{ secrets.TECHDRIVEN_APP_SECRET }}
+
+    - name: Checkout Actions
+      uses: actions/checkout@v3
+      with:
+        repository: techdrivennl/blogpost-actions-central
+        token: ${{ steps.get_app_token.outputs.token }}
+        path: blogpost-actions-central
+        ref: main   
+
+    # Here we use the private Action
+    - name: Echo             
+      uses: ./blogpost-actions-central/.github/actions/echo
+      with:                 
+        text: "Hello World!"
